@@ -1,0 +1,27 @@
+// ==UserScript==
+// @name         Auto Quay Ve Nhiem Vu
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @match        https://clickmoney.online/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    function clickBack() {
+
+        let btn = document.querySelector('a[href="/home/tasks"]');
+
+        if (btn) {
+            console.log("Đã tìm thấy nút Quay về Nhiệm vụ");
+
+            btn.scrollIntoView({block:"center"});
+            btn.click();
+        }
+
+    }
+
+    setInterval(clickBack,2000);
+
+})();
