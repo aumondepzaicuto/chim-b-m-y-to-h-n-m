@@ -1,0 +1,276 @@
+// ==UserScript==
+// @name         AUTO COUNTDOWN BTN FIX PRO + CENTER UI
+// @namespace    http://tampermonkey.net/
+// @version      4.1
+// @match        *://*
+// @grant        none
+// ==/UserScript==
+
+(function(){
+
+"use strict";
+
+function sleep(ms){
+return new Promise(r=>setTimeout(r,ms));
+}
+
+function realClick(el){
+el.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true}));
+}
+
+/* =========================
+CREATE UI
+========================= */
+
+let panel=document.createElement("div");
+
+panel.innerHTML=`
+<div id="autoPanel">
+<div id="autoTitle">⚡ AUTO CLICK BOT</div>
+<div id="autoStatus">Đang khởi động...</div>
+<div id="autoLog"></div>
+</div>
+`;
+
+document.body.appendChild(panel);
+
+/* =========================
+STYLE
+========================= */
+
+let style=document.createElement("style");
+
+style.innerHTML=`
+
+#autoPanel{
+
+position:fixed;
+
+top:50%;
+left:50%;
+
+transform:translate(-50%,-50%);
+
+width:320px;
+
+background:linear-gradient(145deg,#111,#1f2937);
+
+color:white;
+
+padding:20px;
+
+border-radius:16px;
+
+font-family:Arial;
+
+z-index:999999;
+
+box-shadow:0 20px 60px rgba(0,0,0,.6);
+
+backdrop-filter:blur(12px);
+
+animation:fadein .5s;
+
+text-align:center;
+
+}
+
+#autoTitle{
+
+font-size:18px;
+font-weight:bold;
+
+margin-bottom:10px;
+
+color:#22c55e;
+
+}
+
+#autoStatus{
+
+font-size:15px;
+
+padding:8px;
+
+background:#111827;
+
+border-radius:10px;
+
+margin-bottom:12px;
+
+animation:pulse 2s infinite;
+
+}
+
+#autoLog{
+
+max-height:120px;
+
+overflow:auto;
+
+font-size:12px;
+
+text-align:left;
+
+}
+
+.logLine{
+
+margin-bottom:3px;
+opacity:.9;
+
+}
+
+@keyframes pulse{
+
+0%{opacity:.6}
+50%{opacity:1}
+100%{opacity:.6}
+
+}
+
+@keyframes fadein{
+
+from{opacity:0;transform:translate(-50%,-60%)}
+to{opacity:1;transform:translate(-50%,-50%)}
+
+}
+
+`;
+
+document.head.appendChild(style);
+
+/* =========================
+UI UPDATE
+========================= */
+
+function setStatus(text){
+document.querySelector("#autoStatus").innerText=text;
+}
+
+function addLog(text){
+
+let log=document.querySelector("#autoLog");
+
+let div=document.createElement("div");
+
+div.className="logLine";
+
+div.innerText="• "+text;
+
+log.prepend(div);
+
+}
+
+/* =========================
+SCROLL
+========================= */
+
+async function scrollToElement(el){
+
+setStatus("📜 Đang scroll tới nút");
+
+for(let i=0;i<10;i++){
+
+let rect=el.getBoundingClientRect();
+
+let middle=window.innerHeight/2;
+
+if(rect.top>0 && rect.bottom<window.innerHeight){
+
+addLog("Nút đã trong màn hình");
+
+return;
+
+}
+
+window.scrollBy({
+top:rect.top-middle,
+behavior:"auto"
+});
+
+await sleep(800);
+
+}
+
+}
+
+/* =========================
+MAIN
+========================= */
+
+async function run(){
+
+while(true){
+
+let btn=document.querySelector("#countdownBtn");
+
+if(!btn){
+
+setStatus("🔍 Đang tìm nút...");
+
+addLog("Chưa thấy countdownBtn");
+
+await sleep(200);
+
+continue;
+
+}
+
+await scrollToElement(btn);
+
+await sleep(200);
+
+setStatus("🖱 Click lần 1");
+
+addLog("Click lần 1");
+
+realClick(btn);
+
+await sleep(200);
+
+setStatus("🖱 Click lần 2");
+
+addLog("Click lần 2");
+
+realClick(btn);
+
+await sleep(300);
+
+setStatus("⏱ Đang đọc countdown");
+
+let textElement=document.querySelector(".countdown");
+
+let text=(textElement?.innerText||"").toLowerCase();
+
+addLog("Text: "+text);
+
+if(text.includes("nhấn link") || text.includes("nhan link")){
+
+setStatus("🔄 Reload trang");
+
+addLog("Reload trang");
+
+location.reload();
+
+return;
+
+}
+
+await sleep(5000);
+
+}
+
+}
+
+/* =========================
+START
+========================= */
+
+window.addEventListener("load",()=>{
+
+setTimeout(run,100);
+
+});
+
+})();
